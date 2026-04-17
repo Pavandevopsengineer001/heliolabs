@@ -7,8 +7,10 @@ from sqlmodel import Session
 
 from app.core.security import decode_token
 from app.db.session import get_session
+from app.models.cart import Cart
 from app.models.common import UserRole
 from app.models.user import User
+from app.repositories.carts import CartRepository
 from app.repositories.users import UserRepository
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -52,3 +54,28 @@ def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
     return user
+
+
+def ensure_guest_cart_ownership(
+    session_id: str = Depends(get_required_session_id),
+    session: Session = Depends(get_session),
+) -> Cart:
+    """Ensure the session_id exists and belongs to a guest cart."""
+    cart = CartRepository(session).get_by_session_id(session_id)
+    if not cart or cart.user_id is not None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Guest cart not found.")
+    return cart
+
+
+def ensure_user_cart_ownership(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> Cart:
+    """Ensure the authenticated user owns the cart being accessed."""
+    cart = CartRepository(session).get_by_user_id(user.id)
+    if not cart:
+        # Create a new cart for the user if not exists
+        from app.repositories.carts import CartRepository
+        cart_repo = CartRepository(session)
+        cart = cart_repo.get_or_create(user_id=user.id)
+    return cart

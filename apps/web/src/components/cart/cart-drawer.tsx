@@ -11,15 +11,13 @@ import { useCartStore } from "@/store/cart-store";
 
 export function CartDrawer() {
   const token = useAuthStore((state) => state.accessToken);
-  const { cart, isOpen, close, setQuantity, removeItem, loading, error } = useCartStore((state) => ({
-    cart: state.cart,
-    isOpen: state.isOpen,
-    close: state.close,
-    setQuantity: state.setQuantity,
-    removeItem: state.removeItem,
-    loading: state.loading,
-    error: state.error,
-  }));
+  const cart = useCartStore((state) => state.cart);
+  const isOpen = useCartStore((state) => state.isOpen);
+  const close = useCartStore((state) => state.close);
+  const setQuantity = useCartStore((state) => state.setQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const loading = useCartStore((state) => state.loading);
+  const error = useCartStore((state) => state.error);
 
   return (
     <AnimatePresence>

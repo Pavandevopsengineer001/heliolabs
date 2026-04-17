@@ -30,3 +30,22 @@ class AuthResponse(BaseModel):
     token_type: str = "bearer"
     user: UserRead
 
+
+class SendOTPRequest(BaseModel):
+    email: EmailStr
+
+
+class SendOTPResponse(BaseModel):
+    message: str = "OTP sent to email"
+    expires_in_minutes: int = 10
+
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6)
+
+
+class VerifyOTPResponse(BaseModel):
+    message: str = "OTP verified successfully"
+    verified: bool = True
+

@@ -23,6 +23,7 @@ type AuthState = {
   orders: Order[];
   loading: boolean;
   error?: string;
+  isHydrated: boolean;
   signIn: (payload: { email: string; password: string; sessionId?: string }) => Promise<void>;
   signUp: (payload: {
     email: string;
@@ -55,6 +56,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       orders: [],
       loading: false,
+      isHydrated: false,
       signIn: async ({ email, password, sessionId }) => {
         set({ loading: true, error: undefined });
         try {
@@ -184,6 +186,11 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         user: state.user,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.isHydrated = true;
+        }
+      },
     }
   )
 );

@@ -60,3 +60,17 @@ class Address(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
+
+class VerificationCode(SQLModel, table=True):
+    __tablename__ = "verification_codes"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    email: str = Field(sa_column=Column(String(255), nullable=False, index=True))
+    code: str = Field(sa_column=Column(String(10), nullable=False))
+    is_used: bool = Field(default=False, nullable=False)
+    expires_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
+    created_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+

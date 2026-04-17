@@ -38,6 +38,14 @@ class CartRepository:
         self.session.flush()
         return cart
 
+    def validate_user_cart(self, *, cart: Cart, user_id: UUID) -> bool:
+        """Validate that the cart belongs to the specified user."""
+        return cart.user_id == user_id
+
+    def validate_session_cart(self, *, cart: Cart, session_id: str) -> bool:
+        """Validate that the cart belongs to the specified session and is not assigned to a user."""
+        return cart.session_id == session_id and cart.user_id is None
+
     def list_items(self, cart_id: UUID) -> list[CartItem]:
         statement = select(CartItem).where(CartItem.cart_id == cart_id)
         return list(self.session.exec(statement).all())

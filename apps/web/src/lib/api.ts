@@ -95,8 +95,17 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 }
 
 export async function getCart(sessionId: string, token?: string | null): Promise<Cart> {
+  // Use guest endpoint if no token
+  if (!token) {
+    return request<Cart>("/cart/guest", {
+      headers: buildAuthHeaders(undefined, sessionId),
+      cache: "no-store",
+    });
+  }
+
+  // Use authenticated endpoint if token provided
   return request<Cart>("/cart", {
-    headers: buildAuthHeaders(token, sessionId),
+    headers: buildAuthHeaders(token),
     cache: "no-store",
   });
 }
@@ -106,9 +115,23 @@ export async function upsertCartItem(
   sessionId: string,
   token?: string | null
 ): Promise<Cart> {
+  // Use guest endpoint if no token
+  if (!token) {
+    return request<Cart>("/cart/guest", {
+      method: "POST",
+      headers: buildAuthHeaders(undefined, sessionId),
+      body: JSON.stringify({
+        product_id: payload.product_id,
+        quantity: payload.quantity,
+        mode: payload.mode ?? "add",
+      }),
+    });
+  }
+
+  // Use authenticated endpoint if token provided
   return request<Cart>("/cart", {
     method: "POST",
-    headers: buildAuthHeaders(token, sessionId),
+    headers: buildAuthHeaders(token),
     body: JSON.stringify({
       product_id: payload.product_id,
       quantity: payload.quantity,
@@ -122,10 +145,34 @@ export async function removeCartItem(
   sessionId: string,
   token?: string | null
 ): Promise<Cart> {
+  // Use guest endpoint if no token
+  if (!token) {
+    return request<Cart>("/cart/guest/item", {
+      method: "DELETE",
+      headers: buildAuthHeaders(undefined, sessionId),
+      body: JSON.stringify({ product_id: productId }),
+    });
+  }
+
+  // Use authenticated endpoint if token provided
   return request<Cart>("/cart/item", {
     method: "DELETE",
-    headers: buildAuthHeaders(token, sessionId),
+    headers: buildAuthHeaders(token),
     body: JSON.stringify({ product_id: productId }),
+  });
+}
+
+export async function sendOtp(email: string) {
+  return request<{ message: string; expires_in_minutes: number }>("/auth/send-otp", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyOtp(email: string, code: string) {
+  return request<{ message: string; verified: boolean }>("/auth/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
   });
 }
 

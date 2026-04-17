@@ -13,6 +13,7 @@ type CartState = {
   isOpen: boolean;
   loading: boolean;
   error?: string;
+  isHydrated: boolean;
   ensureSession: () => string;
   open: () => void;
   close: () => void;
@@ -36,6 +37,7 @@ export const useCartStore = create<CartState>()(
       cart: emptyCart,
       isOpen: false,
       loading: false,
+      isHydrated: false,
       ensureSession: () => {
         const existing = get().sessionId;
         if (existing) {
@@ -120,6 +122,11 @@ export const useCartStore = create<CartState>()(
         sessionId: state.sessionId,
         cart: state.cart,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.isHydrated = true;
+        }
+      },
     }
   )
 );
